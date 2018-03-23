@@ -9,41 +9,10 @@
 import Foundation
 import Contacts
 
-class AddressModel {
-    
-    var store = CNContactStore()
-    var contacts = [CNContact]()
-    
-    let name = CNContactFormatter.descriptorForRequiredKeys(for: .fullName)
-    let phoneNumber = CNContactPhoneNumbersKey as CNKeyDescriptor
+struct AddressModel { //var addressmodel
+    let nameAndPhone: [AddressContact]
+}
 
-    
-//    func addressData() {
-//        let keys = [name, phoneNumber]
-//        let request = CNContactFetchRequest(keysToFetch: keys)
-//
-//        store.requestAccess(for: .contacts) {(granted, err) in
-//            if(granted) {
-//                do {
-//                    try self.store.enumerateContacts(with: request) {(contact, stop) in
-//                        if !contact.phoneNumbers.isEmpty {
-//                            contacts.append(contentsOf: contact)
-//                        }
-//                    }
-//                    for info in contacts {
-//                        guard let phone = info.phone
-//                    }
-//            }
-//        }
-//
-//        do {
-//            try store.enumerateContacts(with: request) { (contact, stop) in
-//                self.contacts.append(contact)
-//            }
-//        } catch {
-//            print("Error saving fullName \(error)")
-//        }
-        
-    
-
+struct AddressContact {
+    let contact: CNContact
 }

@@ -7,18 +7,27 @@
 //
 
 import UIKit
+import Contacts
+import ChameleonFramework
 
-class AddressViewController: UITableViewController, UITabBarControllerDelegate {
+class AddressViewController: UITableViewController {
     
-    var addressmodel = AddressModel()
+    var addressArray = [AddressModel]()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
-        
         setupNavBar()
-        
+        fetchContacts()
+
     }
+    
+//    override func viewWillAppear(_ animated: Bool) {
+//        setupNavBar()
+//        fetchContacts()
+//    }
+    
+    
+    //MARK: - Setup Navigation Bar
     
     func setupNavBar() {
         navigationController?.navigationBar.prefersLargeTitles = true
@@ -27,30 +36,92 @@ class AddressViewController: UITableViewController, UITabBarControllerDelegate {
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
         searchController.searchBar.placeholder = "검색"
-    }
-
-
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+        
+        print("Setup Nav Bar Success!")
     }
     
+    
+    //MARK: - Fetch Contacts: Name & PhoneNumbers
+    
+    private func fetchContacts() {
+        print("Attempting to fetch contacts today")
+
+        let store = CNContactStore()
+
+        store.requestAccess(for: .contacts) { (granted, err) in
+            if let err = err {
+                print("Failed to request access:", err)
+                return
+            }
+            if granted {
+                print("Access granted")
+
+                let keys = [CNContactGivenNameKey, CNContactFamilyNameKey, CNContactPhoneNumbersKey]
+                let request = CNContactFetchRequest(keysToFetch: keys as [CNKeyDescriptor])
+
+                do {
+                    var addressContact = [AddressContact]()
+
+                    try store.enumerateContacts(with: request, usingBlock: { (contact, stop) in
+                        addressContact.append(AddressContact(contact: contact))
+                    })
+                    let nameAndPhone = AddressModel(nameAndPhone: addressContact)
+                    self.addressArray = [nameAndPhone]
+                    
+                    DispatchQueue.main.async {
+                        self.tableView.reloadData()
+                    }
+                    
+                } catch let err {
+                    print("Failed to enumerate contacts:", err)
+                }
+            } else {
+                print("Access denied..")
+            }
+        }
+    }
+    
+
+    //MARK: - TableView Section Control
+    
+    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+
+        print("viewForHeadeInSection Success!")
+
+        let label = UILabel()
+        label.text = "  Header"
+        label.font = UIFont.boldSystemFont(ofSize: 14)
+        label.backgroundColor = UIColor.init(hexString: "#f2f2f2")
+
+        label.tag = section
+
+        return label
+    }
+
+
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        return self.addressArray.count
+    }
+
     
     //MARK: - TableView Datasource Methods
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return addressmodel.contacts.count
+        return self.addressArray[section].nameAndPhone.count
     }
+
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-//        cell.textLabel?.text = addressmodel.contacts(indexPath.row).name
+
+        let nameAndPhone = addressArray[indexPath.section].nameAndPhone[indexPath.row]
         
-        
+        let fullName = nameAndPhone.contact.familyName + nameAndPhone.contact.givenName
+        cell.textLabel?.text = fullName
+
         return cell
     }
-    
+
     
     //MARK: - TableView Delegate Methods
 
@@ -59,9 +130,6 @@ class AddressViewController: UITableViewController, UITabBarControllerDelegate {
 //        <#code#>
 //    }
 
-    
-
-    
     
 }
 
