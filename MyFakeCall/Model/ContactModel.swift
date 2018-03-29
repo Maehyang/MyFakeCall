@@ -9,10 +9,11 @@
 import Foundation
 import Contacts
 
-struct AddressModel { //var addressmodel
+struct AddressModel { 
     let nameAndPhone: [AddressContact]
 }
 
 struct AddressContact {
     let contact: CNContact
 }
+
