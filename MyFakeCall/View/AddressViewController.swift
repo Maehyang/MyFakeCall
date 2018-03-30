@@ -10,14 +10,14 @@ import UIKit
 import Contacts
 import ChameleonFramework
 
-protocol CellNameDelegate {
-    func userNamePressed(name: Any)
-}
+//protocol CellNameDelegate {
+//    func userNamePressed(name: String)
+//}
 
 
-class AddressViewController: UITableViewController {
-    
-    var delegate: CellNameDelegate?
+class AddressViewController: UITableViewController, UISearchResultsUpdating {
+
+//    var delegate: CellNameDelegate?
     var addressArray = [AddressModel]()
     
     override func viewDidLoad() {
@@ -36,8 +36,16 @@ class AddressViewController: UITableViewController {
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
         searchController.searchBar.placeholder = "검색"
+        searchController.searchResultsUpdater = self
         
         print("Setup Nav Bar Success!")
+    }
+    
+    func updateSearchResults(for searchController: UISearchController) {
+//        let fullName = addressArray.con
+//        self.addressArray.filter { (fullName: String) -> Bool in
+//            <#code#>
+//        }
     }
     
     
@@ -69,7 +77,6 @@ class AddressViewController: UITableViewController {
                     })
                     let nameAndPhone = AddressModel(nameAndPhone: addressContact)
                     self.addressArray = [nameAndPhone]
-
 
                     DispatchQueue.main.async {
                         self.tableView.reloadData()
@@ -126,35 +133,49 @@ class AddressViewController: UITableViewController {
         let nameAndPhone = addressArray[indexPath.section].nameAndPhone[indexPath.row]
         
         let fullName = nameAndPhone.contact.familyName + nameAndPhone.contact.givenName
-        cell.textLabel?.text = fullName + "Section: \(indexPath.section) Row: \(indexPath.row)"
+        cell.textLabel?.text = fullName
         
 //        delegate?.userNamePressed(name: cell.textLabel?.text)
         
         return cell
     }
 
-
     
-    //MARK: - TableView Delegate Methods
+    //MARK: - Perform Segue to SendingViewController
 
     // 셀 선택시 연결된 전화번호로 전화하는 화면으로 넘김
     
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
-
         performSegue(withIdentifier: "SendingCall", sender: self)
-
-//        delegate?.userNamePressed(name: indexPath.row)
-
         
+
+    }
+    
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "SendingCall" {
+            let nextScene = segue.destination as! SendingCallViewController
+            
+            if let indexPath = tableView.indexPathForSelectedRow {
+                let nameOfSelectedPerson = addressArray[indexPath.section].nameAndPhone[indexPath.row].contact.familyName + addressArray[indexPath.section].nameAndPhone[indexPath.row].contact.givenName
+                
+                print(nameOfSelectedPerson) // 여기까지는 됨
+//                nextScene.nameLabel?.text = nameOfSelectedPerson
+                nextScene.preName = nameOfSelectedPerson
+            }
+            
+            
+            
+//
+//        if let indexPath == tableView.indexPathForSelectedRow {
+//            let nameOfSelectedPerson = addressArray[indexPath.section].nameAndPhone[indexPath.row].contact.familyName + addressArray[indexPath.section].nameAndPhone[indexPath.row].contact.givenName
+//            //            nextScene.nameLable?.text = nameOfSelectedPerson
+//            //
+//            print(nameOfSelectedPerson)
+//            //            print("\(nextScene.NameLable?.text)")
+//        }
+    }
     }
 
-
-
-//extension AddressModel {
-//    var titleFirstLetter: String {
-//        return String(describing: self.nameAndPhone[self.nameAndPhone.startIndex]).uppercased()
-//    }
-//}
 }
